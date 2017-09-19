@@ -16,7 +16,7 @@
 
 ### date(1) command 
 
-To parse "from date", We use GNU date(1), so that be sure GNU date in your PATH.
+To parse "from date", We use GNU date(1), so that be sure GNU date is in your PATH.
 
 
 #### for mac OS X
@@ -38,12 +38,12 @@ sudo apt install rtmpdump ffmpeg swftools
 ###### for raspbian users
 
 This radiko.py force to use Audio Jack. 
-if you want to use hdmi , change source like this 
+if you want to use HDMI for playing  , Change Source like this 
 
 ```
 omxplayer -o local # audio jack <- radiko.py 
 omxplayer -o hdmi  # hdmi 
-omxplauer -o auto  # raspi defautl
+omxplauer -o auto  # raspi default
 ```
 
 
