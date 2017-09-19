@@ -6,13 +6,14 @@
 
 ### requirements
 
-- Python 3.6 newer
+- Python 3.6 newer -- for f'' string
 - swfextract(1) --- required　for auth, included in swftools
-- xmllint(1)  --- require for auth 
+- xmllint(1)  --- required for auth 
 - mplayer(1)  --- for play audio 
 - rtmpdump(1) --- for radiko simule streaming 
 - ffmpeg(1)  ---  for radiko time free 
 - GNU date(1) --  for radiko time free 
+- omxplayer(1)  ---  used in raspbian
 
 #### for mac OS X
 
