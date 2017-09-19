@@ -7,7 +7,7 @@ import subprocess
 def main():
   
   
-  parser = argparse.ArgumentParser(description=u'radiko用のキーを取得して出力する')
+  parser = argparse.ArgumentParser(description='radiko用のキーを取得して出力する')
   
   radiko = Radiko()
   authtoken = radiko.auth_key()
