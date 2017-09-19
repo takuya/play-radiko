@@ -1,4 +1,4 @@
-from play_radiko import Radiko
+from radiko import Radiko
 import argparse
 import datetime
 import subprocess

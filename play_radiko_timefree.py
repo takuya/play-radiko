@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # coding:utf-8
-from play_radiko import Radiko
+from radiko import Radiko
 import argparse
 import datetime
 import subprocess
@@ -35,6 +35,7 @@ def main():
   #
   radiko = Radiko()
   radiko.play_radiko_timefree(channel,start,end)
+
 
 
 
