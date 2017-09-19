@@ -22,7 +22,7 @@ brew install rtmpdump ffmpeg mplayer swftools coreutils
 
 #### for debian 
 ```
-sudo apt install rtmpdump ffmpeg mplayer swftools
+sudo apt install rtmpdump ffmpeg mplayer swftools libxml2-utils
 ```
 
 ### Examples
