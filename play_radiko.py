@@ -2,26 +2,21 @@
 # coding:utf-8
 
 
+import urllib.request, urllib.error, urllib.parse
+import os,sys,datetime,argparse,re
+import subprocess
+import base64
+import shlex
+import logging
+
+
+import xml.etree.ElementTree as ET
+
+## for debugging
+import IPython
 import pprint
 pp = pprint.PrettyPrinter(indent=4)
 pprint = pp.pprint
-import os
-import datetime
-import sys
-import urllib
-import urllib.request
-import urllib.error
-import urllib.parse
-#import urllib2
-import subprocess
-import base64
-import argparse
-import ssl
-import shlex
-import IPython
-import time
-import re
-import logging
 
 
 class Radiko:
@@ -35,10 +30,10 @@ class Radiko:
   ## コマンドの位置をチェック
   ## TODO:mplayer と ffmpeg 両方使うのは無駄が多いので何方かにする
   ## raspi だと omxplayer で行ける
-  swfextract = subprocess.check_output("which swfextract", shell=True).strip().decode('utf8')
-  rtmpdump = subprocess.check_output("which rtmpdump", shell=True).strip().decode('utf8')
-  mplayer = subprocess.check_output("which mplayer", shell=True).strip().decode('utf8')
-  ffmpeg = subprocess.check_output("which ffmpeg", shell=True).strip().decode('utf8')
+  swfextract = None
+  rtmpdump = None
+  mplayer = None
+  ffmpeg = None
 
   ## Radikoの認証キーを保持する変数
   authtoken = None
@@ -51,11 +46,41 @@ class Radiko:
 
   def __init__(self):
     self.is_raspbian = self.check_env_is_raspbian()
+    self.check_path()
+  
+  def check_path(self):
+    self.swfextract = self.get_path('swfextract')
+    self.rtmpdump = self.get_path('rtmpdump')
+    self.ffmpeg = self.get_path('ffmpeg')
+
+    if self.is_raspbian == False:
+      self.mplayer = self.get_path('mplayer')
+      
+    
+  def get_path(self, cmd_name):
+    if subprocess.getstatusoutput(f'type {cmd_name}')[0] == 0 :
+      return subprocess.check_output(f"which {cmd_name}", shell=True).strip().decode('utf8')
+    else:
+      return None
+  
+  
+  def get_player_cmd(self):
+    # TODO: mplayer2/mpv の場合は mplayer2 --cache-secs=30 / mplayer2 --cache=1024
+    player_cmd = f'{self.mplayer} -cache {32*1} - ' # キャッシュ量 kb ＝バッファリングサイズ
+    if self.is_raspbian:
+      player_cmd = 'omxplayer --timeout 60s -o local --no-keys pipe:0'
+    
+    return player_cmd
+  
+    
 
 
   def check_env_is_raspbian(self):
     ret = subprocess.check_output("uname -a", shell=True).strip().decode('utf8')
-    return re.search( 'raspi', ret )
+    if re.search( 'raspi', ret ) :
+      return True
+    else:
+      return False
   
   def auth_key(self):
     ## 変数をローカルに
@@ -223,10 +248,15 @@ class Radiko:
     logging.info( "channel program list url http://radiko.jp/v2/api/program/today?area_id=%s" % areaid)
     logging.info( "--------------------------" )
     logging.info( "list of channels  ")
-    channels =  subprocess.check_output( "curl -s  http://radiko.jp/v2/api/program/today?area_id=%s " % areaid+
-                                         "| xmllint --format --xpath //station/@id - "+
-                                         " | ruby -ne 'puts $_.split ' " ,
-                                         shell=True).decode('utf-8')
+
+    ctx = urllib.request.urlopen(f'http://radiko.jp/v2/api/program/today?area_id={areaid}')
+    xml_string = ctx.read()
+    root = ET.fromstring(xml_string)
+    channels = [ e.attrib['id'] for e in root.findall(".//station[@id]") ]
+    # channels =  subprocess.check_output( "curl -s  http://radiko.jp/v2/api/program/today?area_id=%s " % areaid+
+    #                                      "| xmllint --format --xpath //station/@id - "+
+    #                                      " | ruby -ne 'puts $_.split ' " ,
+    #                                      shell=True).decode('utf-8')
     logging.info(channels)
     return channels
   #
@@ -239,45 +269,38 @@ class Radiko:
       print( "--------------------------")
       print( " your choice : %s " % channel)
       print( "--------------------------")
-      print("station %s is not available.   " % channel)
+      print( str.join('\n',channels) )
       print( "--------------------------")
-      print(channels)
+      print("station %s is not available.   " % channel)
       exit(1)
 
   #
   # get stream-url
   #
   def get_stream_url(self, channel ):
-    if os.path.exists( "%s.xml" % channel ) :
-      os.remove("%s.xml" % channel)
-
     try :
-      channel_url = "http://radiko.jp/v2/station/stream/%s.xml" % channel
+      channel_url = f"http://radiko.jp/v2/station/stream/{channel}.xml"
       logging.info(channel_url)
       body = urllib.request.urlopen( channel_url ).read()
-      f = open("%s.xml" % channel, "wb")
-      f.write( body )
-      f.close()
+      root = ET.fromstring(body)
+      stream_url = root.find('.//item[1]').text
+      return stream_url
     except :
-      print("error in to get %s.xml " % channel )
+      print("error to get channel %s.xml " % channel )
       raise
-
-
-    cmd = "xmllint %s.xml --xpath /url/item[1]/text() " % channel
-    stream_url = subprocess.check_output(cmd.strip().split(" ")).decode('utf-8')
-    os.remove("%s.xml" % channel)
-    logging.info( stream_url )
-    return stream_url
 
   #
   # stream_url の構造をバラす
   #
   def stream_url_to_parts(self,stream_url):
-    ## TODO: re で書き換える
-    cmd = "echo '%s' | perl -pe 's!^(.*)://(.*?)/(.*)/(.*?)$/!$1://$2 $3 $4!'" % stream_url
-    logging.info(cmd)
-    ret = subprocess.check_output(cmd, shell=True).decode('utf-8')
-    url_parts = ret.split(" ")
+    # cmd = "echo '%s' | perl -pe 's!^(.*)://(.*?)/(.*)/(.*?)$/!$1://$2 $3 $4!'" % stream_url
+    # logging.info(cmd)
+    # ret = subprocess.check_output(cmd, shell=True).decode('utf-8')
+    # url_parts = ret.split(" ")
+    # logging.info( url_parts )
+    ##
+    m = re.match('^(.*)://(.*?)/(.*)/(.*?)$',stream_url).groups()
+    url_parts =  [f'{m[0]}://{m[1]}',m[2],m[3] ]
     logging.info( url_parts )
     return url_parts
 
@@ -297,7 +320,9 @@ class Radiko:
     logging.info(cmd)
     return cmd
     
-  
+  ########################################################
+  ## コマンドからのインターフェース
+  ########################################################
   #
   # radiko のストリーミング放送を再生する
   #
@@ -311,19 +336,13 @@ class Radiko:
     
     stream_url = self.get_stream_url(channel)
     url_parts = self.stream_url_to_parts(stream_url)
-
-    mplayer  = self.mplayer
  
     stream_cmd = self.build_rtmpdump(url_parts,authtoken,duration)
     logging.info(stream_cmd)
-    logging.info(" " * 10)
-    logging.info("\n")
 
-    player_cmd = f'{mplayer} -cache {1024*1} - ' # キャッシュ量 kb ＝バッファリングサイズ
-    if self.is_raspbian:
-      player_cmd = 'omxplayer --timeout 60s -o local --no-keys pipe:0'
- 
- 
+    player_cmd = self.get_player_cmd()
+    logging.info(player_cmd)
+
     p1 = subprocess.Popen(stream_cmd.strip().split(" "), stdout=subprocess.PIPE)
     p2 = subprocess.Popen(shlex.split(player_cmd), stdin=p1.stdout)
     p1.stdout.close()
@@ -350,7 +369,6 @@ class Radiko:
     #TODO 日付と時間の処理
     #TODO 番組表取得処理
     authtoken = self.auth_key()
-    mplayer  = self.mplayer
     ffmpeg   = self.ffmpeg
 
     ffmpeg_cmd = f"{ffmpeg} -y \
@@ -364,9 +382,7 @@ class Radiko:
 
 
 
-    player_cmd = f'{mplayer} -cache {1024*1} - ' # キャッシュ量 kb ＝バッファリングサイズ
-    if self.is_raspbian:
-      player_cmd = 'omxplayer --timeout 60s --no-keys -o local pipe:0'
+    player_cmd = self.get_player_cmd()
 
     p1 = subprocess.Popen(shlex.split(ffmpeg_cmd.strip()), stdout=subprocess.PIPE)
     p2 = subprocess.Popen(shlex.split(player_cmd.strip()), stdin=p1.stdout)
@@ -385,8 +401,8 @@ def main():
   parser.add_argument('-d', '--duration',default='1800' , help=u'再生（録音）時間', type=int)
   parser.add_argument('-o', '--output'  , help=u'保存先')
   parser.add_argument('-p', '--play-live',action='store_const',const=True, default=False, help=u'保存しながら再生する')
-  # parser.add_argument('-t', '--play-timefree',action='store_const',const=True, default=False, help=u'タイムシフトを保存しながら再生する')
-
+  
+  
   args = parser.parse_args()
   channel  = vars(args)['channel_name'].upper()
   DURATION = vars(args)['duration']
