@@ -11,11 +11,11 @@ def main():
 
   parser = argparse.ArgumentParser(description=u'radiko の再生と録音を行いますよ')
   
-  parser.add_argument('channel_name', help=u'チャンネル' )
-  parser.add_argument('-d', '--duration',default='1800' , help=u'再生時間 n sec', type=int)
+  parser.add_argument('channel_name', help='チャンネル' )
+  parser.add_argument('-d', '--duration',default='1800' , help='再生時間 n sec', type=int)
   parser.add_argument('-f', '--from',
                       default=datetime.datetime.strftime(datetime.datetime.now()-datetime.timedelta(hours=3), '%Y%m%d%H%M'),
-                      help=u'開始時間:2017-09-18 11:11 / date コマンドで解釈できる形式', type=str)
+                      help='開始時間:2017-09-18 11:11 / date コマンドで解釈できる形式', type=str)
   
   
   args = parser.parse_args()
