@@ -30,6 +30,24 @@ brew install rtmpdump ffmpeg mplayer swftools coreutils
 sudo apt install rtmpdump ffmpeg mplayer swftools
 ```
 
+#### for Raspberry Pi ( raspbian )
+```
+sudo apt install rtmpdump ffmpeg swftools
+```
+
+###### for raspbian users
+
+This radiko.py force to use Audio Jack. 
+if you want to use hdmi , change source like this 
+
+```
+omxplayer -o local # audio jack <- radiko.py 
+omxplayer -o hdmi  # hdmi 
+omxplauer -o auto  # raspi defautl
+```
+
+
+
 ### Examples
 
 usage examples.
