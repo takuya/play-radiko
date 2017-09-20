@@ -64,7 +64,8 @@ class Radiko:
     if subprocess.getstatusoutput(f'type {cmd_name}')[0] == 0 :
       return subprocess.check_output(f"which {cmd_name}", shell=True).strip().decode('utf8')
     else:
-      return None
+      print(f'{cmd_name} not found , install {cmd_name} ')
+      exit()
   
   
   def get_player_cmd(self):
