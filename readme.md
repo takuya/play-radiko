@@ -69,6 +69,13 @@ Play Radiko TimeFree  ABC 1008 today 15:00 ピタッと
 ./play_radko.py abc  -f 15:00 -d 10800
 ```
 
+#### Example 04 : 
+Play Radiko via ssh ( to correct area )
+If  Radiko failed to detect area , play from ssh is useful way.
+```
+ssh mine 'LANG=ja_JP.UTF-8 python.3.6 play_radiko.py abc --no-play-live --output -'  | mplayer - -cache 128
+```
+
 
 
 
