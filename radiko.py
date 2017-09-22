@@ -402,8 +402,8 @@ class Radiko:
   # radiko のストリーミングを再生しながら保存する。
   #
   def play_and_save_radiko(self,channel,duration,output=None):
-    if output == None:
-      output = self.get_default_output_filename(channel,datetime.datetime.now().duration)
+    if output == None or output == '' :
+      output = self.get_default_output_filename(channel,datetime.datetime.now(), duration=duration)
 
     authtoken = self.auth_key()
 
@@ -435,8 +435,8 @@ class Radiko:
   # radiko のストリーミング放送をファイルに保存する。
   #
   def save_radiko(self,channel,duration,output=None):
-    if output == None:
-      output = self.get_default_output_filename(channel,datetime.datetime.now().duration)
+    if output == None or output == '' :
+      output = self.get_default_output_filename(channel,datetime.datetime.now(),duration=duration)
   
     authtoken = self.auth_key()
   
@@ -482,7 +482,7 @@ class Radiko:
   #
   def play_and_save_radiko_timefree(self,channel,start,end,output=None):
     #
-    if output == None:
+    if output == None or output == '' :
       output = self.get_default_output_filename(
             channel,datetime.datetime.strptime(start, '%Y%m%d%H%M'),
             end=datetime.datetime.strptime(end, '%Y%m%d%H%M'))
@@ -512,7 +512,7 @@ class Radiko:
   #
   def save_radiko_timefree(self,channel,start,end,output=None):
     #
-    if output == None:
+    if output == None or output == '':
       output = self.get_default_output_filename(
           channel,datetime.datetime.strptime(start, '%Y%m%d%H%M'),
           end=datetime.datetime.strptime(end, '%Y%m%d%H%M'))
