@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # coding:utf-8
-
+# vim: expandtab nowrap ts=2 sw=2 sts=2
 
 
 from radiko import Radiko
@@ -9,6 +9,11 @@ import datetime
 import subprocess
 
 
+## for debugging
+# import IPython
+# import pprint
+# pp = pprint.PrettyPrinter(indent=4)
+# pprint = pp.pprint
 
 def main():
 
@@ -18,7 +23,7 @@ def main():
   parser.add_argument('channel_name', help='チャンネル' )
   parser.add_argument('-d', '--duration',default='1800' , help='再生（録音）時間', type=int)
   parser.add_argument('-o', '--output'  , help='保存先')
-  parser.add_argument('-p', '--play-live',action='store_const',const=True, default=False, help='保存しながら再生する')
+  parser.add_argument('--no-play-live',action='store_const',default=False,const=True, help='再生しない')
   
   
   args = parser.parse_args()
@@ -26,10 +31,19 @@ def main():
   duration = vars(args)['duration']
   #
   radiko = Radiko()
-  # if vars(args)['output'] :
-  radiko.play_radiko(channel,duration)
-  # else:
-  #   radiko.play_radiko(channel,duration)
+
+  ## 
+  if vars(args)['no_play_live'] == False :
+    f_out = vars(args)['output']
+    radiko.save_radiko(channel,duration,output=f_out)
+    exit()
+  ##
+  if vars(args)['output'] :
+    radiko.save_and_play_radiko(channel,duration, output=vars(args)['output'])
+    exit()
+  else:
+    radiko.play_radiko(channel,duration)
+    exit()
 
 
 
