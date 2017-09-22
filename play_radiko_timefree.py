@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # coding:utf-8
+# vim: expandtab nowrap ts=2 sw=2 sts=2
 from radiko import Radiko
 import argparse
 import datetime
@@ -17,6 +18,7 @@ def main():
                       default=datetime.datetime.strftime(datetime.datetime.now()-datetime.timedelta(hours=3), '%Y%m%d%H%M'),
                       help='開始時間:2017-09-18 11:11 / date コマンドで解釈できる形式', type=str)
   
+  parser.add_argument('-o', '--output'  , help='保存先',nargs='?', default=None,const='')
   
   args = parser.parse_args()
   channel  = vars(args)['channel_name'].upper()
@@ -30,11 +32,23 @@ def main():
   end  = datetime.datetime.strftime(end, '%Y%m%d%H%M')
   
   
+
+  radiko = Radiko()
+
+
+  if vars(args)['output'] != None :
+    # print('only save ')
+    f_out = vars(args)['output']
+    radiko.save_radiko_timefree(channel,start,end,output=f_out)
+    exit()
+  else:
+    # print('just play ')
+    radiko.play_radiko_timefree(channel,start,end)
+    exit()
+
   
   
   #
-  radiko = Radiko()
-  radiko.play_radiko_timefree(channel,start,end)
 
 
 
