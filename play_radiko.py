@@ -34,7 +34,6 @@ def main():
 
 
 
-  pprint( vars(args)['output'] )
   ## 
   if vars(args)['no_play_live'] == True :
     print('only save ')
