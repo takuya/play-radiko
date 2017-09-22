@@ -451,7 +451,7 @@ class Radiko:
     stream_cmd = stream_cmd + f" -o {output}"
     logging.info(stream_cmd)
   
-    p1 = subprocess.Popen(stream_cmd.strip().split(" "))
+    p1 = subprocess.Popen(shlex.split(stream_cmd))
     p1.wait()
 
     pass
