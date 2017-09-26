@@ -37,12 +37,12 @@ def main():
 
 
   if vars(args)['output'] != None :
-    # print('only save ')
+    print('only save ')
     f_out = vars(args)['output']
     radiko.save_radiko_timefree(channel,start,end,output=f_out)
     exit()
   else:
-    # print('just play ')
+    print('just play ')
     radiko.play_radiko_timefree(channel,start,end)
     exit()
 

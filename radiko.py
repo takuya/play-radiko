@@ -297,6 +297,8 @@ class Radiko:
       body = urllib.request.urlopen( channel_url ).read()
       root = ET.fromstring(body)
       stream_url = root.find('.//item[1]').text
+      # print(stream_url)
+      # exit()
       return stream_url
     except :
       print("error to get channel %s.xml " % channel )
@@ -516,7 +518,9 @@ class Radiko:
       output = self.get_default_output_filename(
           channel,datetime.datetime.strptime(start, '%Y%m%d%H%M'),
           end=datetime.datetime.strptime(end, '%Y%m%d%H%M'))
-  
+    elif output == '-' or output == 'pipe0' :
+        output = '-f mpegts - '
+
     #
     authtoken = self.auth_key()
   
@@ -525,7 +529,6 @@ class Radiko:
       exit()
   
     ffmpeg_cmd = self.buld_timefree_ffmpeg(authtoken,channel,start,end,output)
-    logging.info(ffmpeg_cmd)
     
     p1 = subprocess.Popen(shlex.split(ffmpeg_cmd.strip()))
     p1.wait()
