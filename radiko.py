@@ -298,6 +298,8 @@ class Radiko:
       body = urllib.request.urlopen( channel_url ).read()
       root = ET.fromstring(body)
       stream_url = root.find('.//item[1]').text
+      # print(stream_url)
+      # exit()
       return stream_url
     except :
       print("error to get channel %s.xml " % channel )
@@ -403,8 +405,8 @@ class Radiko:
   # radiko のストリーミングを再生しながら保存する。
   #
   def play_and_save_radiko(self,channel,duration,output=None):
-    if output == None:
-      output = self.get_default_output_filename(channel,datetime.datetime.now().duration)
+    if output == None or output == '' :
+      output = self.get_default_output_filename(channel,datetime.datetime.now(), duration=duration)
 
     authtoken = self.auth_key()
 
@@ -436,8 +438,8 @@ class Radiko:
   # radiko のストリーミング放送をファイルに保存する。
   #
   def save_radiko(self,channel,duration,output=None):
-    if output == None:
-      output = self.get_default_output_filename(channel,datetime.datetime.now().duration)
+    if output == None or output == '' :
+      output = self.get_default_output_filename(channel,datetime.datetime.now(),duration=duration)
   
     authtoken = self.auth_key()
   
@@ -452,7 +454,7 @@ class Radiko:
     stream_cmd = stream_cmd + f" -o {output}"
     logging.info(stream_cmd)
   
-    p1 = subprocess.Popen(stream_cmd.strip().split(" "))
+    p1 = subprocess.Popen(shlex.split(stream_cmd))
     p1.wait()
 
     pass
@@ -483,7 +485,7 @@ class Radiko:
   #
   def play_and_save_radiko_timefree(self,channel,start,end,output=None):
     #
-    if output == None:
+    if output == None or output == '' :
       output = self.get_default_output_filename(
             channel,datetime.datetime.strptime(start, '%Y%m%d%H%M'),
             end=datetime.datetime.strptime(end, '%Y%m%d%H%M'))
@@ -513,11 +515,13 @@ class Radiko:
   #
   def save_radiko_timefree(self,channel,start,end,output=None):
     #
-    if output == None:
+    if output == None or output == '':
       output = self.get_default_output_filename(
           channel,datetime.datetime.strptime(start, '%Y%m%d%H%M'),
           end=datetime.datetime.strptime(end, '%Y%m%d%H%M'))
-  
+    elif output == '-' or output == 'pipe0' :
+        output = '-f mpegts - '
+
     #
     authtoken = self.auth_key()
   
@@ -526,7 +530,6 @@ class Radiko:
       exit()
   
     ffmpeg_cmd = self.buld_timefree_ffmpeg(authtoken,channel,start,end,output)
-    logging.info(ffmpeg_cmd)
     
     p1 = subprocess.Popen(shlex.split(ffmpeg_cmd.strip()))
     p1.wait()
