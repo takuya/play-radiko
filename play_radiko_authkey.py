@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from radiko import Radiko
 import argparse
 import datetime
