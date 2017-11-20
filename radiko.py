@@ -9,6 +9,7 @@ import base64
 import shlex
 import logging
 
+logging.basicConfig(level=logging.INFO)
 
 import xml.etree.ElementTree as ET
 
@@ -72,7 +73,7 @@ class Radiko:
     # TODO: mplayer2/mpv の場合は mplayer2 --cache-secs=30 / mplayer2 --cache=1024
     player_cmd = f'{self.mplayer} -cache {512*1} - ' # キャッシュ量 kb ＝バッファリングサイズ
     if self.is_raspbian:
-      player_cmd = 'omxplayer --timeout 60s -o local --no-keys pipe:0'
+      player_cmd = 'omxplayer --hw --timeout 60s -o local --no-keys pipe:0'
     
     return player_cmd
   
