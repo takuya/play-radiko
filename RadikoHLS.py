@@ -24,6 +24,7 @@ class RadikoHLS:
   ## コマンドのパスを覚えておく
   ffmpeg = None
   mplayer = None
+  omxplayer = None
   ## 環境
   is_raspbian = False
   
@@ -32,11 +33,11 @@ class RadikoHLS:
     self.check_path()
 
   def check_path(self):
+    self.ffmpeg = self.get_path('ffmpeg')
     if self.is_raspbian == False:
-      self.ffmpeg = self.get_path('ffmpeg')
       self.mplayer = self.get_path('mplayer')
     else:
-      self.player = self.get_path('omxplayer')
+      self.omxplayer = self.get_path('omxplayer')
 
   def get_path(self, cmd_name):
     # コマンドのパスや存在チェックや環境チェック
@@ -49,9 +50,11 @@ class RadikoHLS:
   def check_env_is_raspbian(self):
     ret = subprocess.check_output("uname -a", shell=True).strip().decode('utf8')
     if re.search( 'raspi', ret ) :
-      return True
+      self.is_raspbian = True
     else:
-      return False
+      self.is_raspbian = False
+    return self.is_raspbian
+
   def access_auth(self):
     return self.auth_by_html5_api()
   
@@ -199,9 +202,13 @@ class RadikoHLS:
 
   def play_cmd(self,input,options=''):
     if self.is_raspbian:
-      player_cmd = f"omxplayer --hw --timeout 60s -o local {options} '{input}'"
+        if input == '-':
+            input = 'pipe:0'
+            options +='  --no-keys '
+        ##
+        player_cmd = f"{self.omxplayer} --hw --timeout 60s -o local {options} '{input}'"
     else:
-      player_cmd = f"{self.mplayer}  -cache 32 {options} '{input}'"
+      player_cmd = f"{self.mplayer}  -cache 128 {options} '{input}'"
       
     return player_cmd
   
@@ -265,7 +272,7 @@ class RadikoHLS:
         p1.communicate()
 
     elif re.match( 'https:', chunk_url ):
-      stream_cmd = self.save_cmd(chunk_url, '-', duration, output_options='-f mpegts')
+      stream_cmd = self.save_cmd(chunk_url, '-', duration, output_options='-f mpegts -acodec copy ')
       player_cmd = self.play_cmd('-')
       logging.info(f'cmd : {stream_cmd}')
       logging.info(f'cmd : {player_cmd}')
@@ -333,9 +340,19 @@ class RadikoHLS:
     live_url  = self.radiko_timefree_url(channel, start, end )
     chunk_url = self.chunk_m3u8_url(live_url,auth_token)
 
+    if self.is_raspbian:
+      player_cmd = self.play_cmd( chunk_url )
+  
+      logging.info(f'cmd :{player_cmd}')
+  
+      p1 = subprocess.Popen(shlex.split(player_cmd.strip()), stdout=subprocess.PIPE)
+      output = p1.communicate()
+      exit()
+
+
     if re.match( 'https', chunk_url ):
-      stream_cmd = self.save_cmd( chunk_url, '-', output_options='-f mpegts -vn ' )
-      player_cmd = self.play_cmd( '-', '-cache 512' )
+      stream_cmd = self.save_cmd( chunk_url, '-', output_options='-f mpegts -vn -acodec copy  ' )
+      player_cmd = self.play_cmd( '-' )
   
       logging.info(f'cmd :{stream_cmd}')
       logging.info(f'cmd :{player_cmd}')
@@ -359,3 +376,7 @@ class RadikoHLS:
 # radiko.save_timefreestream('MBS','201711241530','201711241600')
 # radiko.play_radiko_livestream('TBS', 7200)
 
+# radiko = RadikoHLS()
+# radiko.save_timefree('MBS','201711231600', '201711231610')
+# radiko.play_timefree('MBS','201711231600', '201711231610')
+# radiko.play_radiko_livestream('MBS', 7200)
