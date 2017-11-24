@@ -377,6 +377,6 @@ class RadikoHLS:
 # radiko.play_radiko_livestream('TBS', 7200)
 
 # radiko = RadikoHLS()
-# radiko.save_timefree('MBS','201711231600', '201711231610')
+# radiko.save_timefreestream('MBS','201711231600', '201711231610')
 # radiko.play_timefree('MBS','201711231600', '201711231610')
 # radiko.play_radiko_livestream('MBS', 7200)
