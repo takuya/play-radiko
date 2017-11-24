@@ -12,7 +12,7 @@ import xml.etree.ElementTree as ET
 
 logging.basicConfig(level=logging.INFO)
 
-#from IPython import embed
+# from IPython import embed
 
 
 class RadikoHLS:
@@ -276,8 +276,41 @@ class RadikoHLS:
     exit()
 
   ## radiko の timefree を保存する
-  def save_timefreestream(self,channel, duration=3600,output=None):
-    pass
+  def save_timefreestream(self, channel, start, end ,output=None):
+
+    auth_token = self.access_auth()
+    ## format start and end
+    if type(start) == int or  type(start) == float:
+      start = datetime.datetime.fromtimestamp(start)
+    if type(start) == datetime.datetime :
+      start = datetime.datetime.strftime(start, '%Y%m%d%H%M')
+    if type(end) == int or  type(end) == float:
+      endt = datetime.datetime.fromtimestamp(end)
+    if type(end) == datetime.datetime :
+      end = datetime.datetime.strftime(end, '%Y%m%d%H%M')
+  
+    if self.is_channel_available(channel) == False :
+      logging.info( self.get_channels() )
+      exit()
+      
+    if output == None :
+      output = self.get_default_output_filename(
+          channel,
+          datetime.datetime.strptime(start, '%Y%m%d%H%M').timestamp(),
+          None,
+          datetime.datetime.strptime(end, '%Y%m%d%H%M').timestamp()
+      )
+  
+    live_url  = self.radiko_timefree_url(channel, start, end )
+    chunk_url = self.chunk_m3u8_url(live_url,auth_token)
+  
+    save_cmd = self.save_cmd( chunk_url, output, output_options=' -vn -acodec copy ' )
+  
+    logging.info(f'cmd :{save_cmd}')
+  
+    p1 = subprocess.Popen(shlex.split( save_cmd.strip()) )
+    output = p1.communicate()
+
 
   ## radiko のタイムフリーを再生する
   def play_timefree(self,channel,start,end):
@@ -297,7 +330,7 @@ class RadikoHLS:
       logging.info( self.get_channels() )
       exit()
 
-    live_url  = self.radiko_timefree_url(channel, start, end,)
+    live_url  = self.radiko_timefree_url(channel, start, end )
     chunk_url = self.chunk_m3u8_url(live_url,auth_token)
 
     if re.match( 'https', chunk_url ):
@@ -323,5 +356,6 @@ class RadikoHLS:
 
 # radiko = RadikoHLS()
 # radiko.play_timefree('TBS','201711231600', '201711231601')
+# radiko.save_timefreestream('MBS','201711241530','201711241600')
 # radiko.play_radiko_livestream('TBS', 7200)
 
