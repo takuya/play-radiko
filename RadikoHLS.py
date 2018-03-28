@@ -186,18 +186,25 @@ class RadikoHLS:
   #
   # get default output file name
   #
-  def get_default_output_filename(self,channel,start,duration=None,end=None):
-    
-    from_time = start
-  
+  def get_default_output_filename(self,channel,start=None,duration=None,end=None):
+
+    duration = duration or 1800
+    from_time = start or datetime.datetime.now().timestamp()
+    if type(from_time) == datetime.datetime :
+      from_time = from_time.timestamp()
+
     if ( end ) :
       to___time = end
-    if (duration):
+    elif (duration):
       to___time = start + datetime.timedelta(seconds=duration).total_seconds()
-    
-    from_time = datetime.datetime.strftime(datetime.datetime.utcfromtimestamp( from_time ), '%Y-%m-%d-%H:%M')
-    __to_time = datetime.datetime.strftime(datetime.datetime.utcfromtimestamp( to___time ), '_%H:%M')
-    output = f'{channel}_{from_time}{__to_time}.aac'
+
+    from_time = datetime.datetime.fromtimestamp(from_time)
+    to___time = datetime.datetime.fromtimestamp(to___time)
+
+    from_time = datetime.datetime.strftime(from_time, '%Y-%m-%d-%H:%M')
+    to___time = datetime.datetime.strftime(to___time, '_%H:%M')
+    output = f'{channel}_{from_time}{to___time}.aac'
+
     return output
 
   def play_cmd(self,input,options=''):
@@ -226,8 +233,13 @@ class RadikoHLS:
   ## コマンドからのインターフェース
   ########################################################
 
+
   ## radiko の live stream を保存する
-  def save_livestream(self,channel, duration=3600,output=None):
+  def save_radiko(self,channel, duration=3600,output=None):
+    ## alias
+    self.save_livestream(channel, duration,output)
+
+  def save_livestream(self,channel, duration=3600, output=None ):
     auth_token = self.access_auth()
   
     if self.is_channel_available(channel) == False :
@@ -239,16 +251,49 @@ class RadikoHLS:
   
     live_url  = self.radiko_live_url(channel)
     chunk_url = self.chunk_m3u8_url(live_url,auth_token)
-  
     cmd = self.save_cmd( chunk_url, output, duration )
-  
     p1 = subprocess.Popen(shlex.split(cmd))
     output = p1.communicate()
 
     pass
 
+  def play_and_save_radiko(self,channel,duration=None,output=None):
+    ## alias
+    self.play_and_save_livestream(channel,duration,output )
+
+  def play_and_save_livestream(self,channel,duration=None,output=None):
+    # token
+    auth_token = self.access_auth()
+
+    if self.is_channel_available(channel) == False:
+      logging.info(self.get_channels())
+      exit()
+
+    live_url = self.radiko_live_url(channel)
+    chunk_url = self.chunk_m3u8_url(live_url, auth_token)
+
+    stream_cmd = self.save_cmd(chunk_url, '-', duration, output_options='-f mpegts -acodec copy ')
+    player_cmd = self.play_cmd('-')
+
+    logging.info(f'cmd : {stream_cmd}')
+    logging.info(f'cmd : {player_cmd}')
+
+    output = output or self.get_default_output_filename(datetime.datetime.now());
+
+    p1 = subprocess.Popen(shlex.split(stream_cmd.strip()), stdout=subprocess.PIPE)
+    p2 = subprocess.Popen(shlex.split(f'tee {output}'), stdin=p1.stdout,stdout=subprocess.PIPE)
+    p3 = subprocess.Popen(shlex.split(player_cmd.strip()), stdin=p2.stdout)
+    output = p3.communicate()
+    output = p2.communicate()
+    output = p1.communicate()
+    exit()
+
   ## radiko サイマルストリームを再生する
-  def play_radiko_livestream(self, channel, duration=3600):
+  def play_radiko(self, channel, duration=None):
+    ### alias
+    self.play_radiko_livestream(channel, duration)
+
+  def play_radiko_livestream(self, channel, duration=None):
     # token
     auth_token = self.access_auth()
     ## buffer
@@ -261,7 +306,6 @@ class RadikoHLS:
     live_url  = self.radiko_live_url(channel)
     chunk_url = self.chunk_m3u8_url(live_url,auth_token)
 
-    
     if re.match( 'http:', chunk_url ):
       player_cmd = self.play_cmd(chunk_url)
       logging.info(player_cmd)
@@ -284,6 +328,10 @@ class RadikoHLS:
     exit()
 
   ## radiko の timefree を保存する
+  def save_radiko_timefree(self, channel, start, end ,output=None):
+    # alias
+    self.save_timefreestream(channel, start, end ,output)
+
   def save_timefreestream(self, channel, start, end ,output=None):
 
     auth_token = self.access_auth()
@@ -300,20 +348,22 @@ class RadikoHLS:
     if self.is_channel_available(channel) == False :
       logging.info( self.get_channels() )
       exit()
-      
-    if output == None :
+
+
+
+    if output == None or output == '' :
       output = self.get_default_output_filename(
           channel,
           datetime.datetime.strptime(start, '%Y%m%d%H%M').timestamp(),
           None,
           datetime.datetime.strptime(end, '%Y%m%d%H%M').timestamp()
       )
-  
+
     live_url  = self.radiko_timefree_url(channel, start, end )
     chunk_url = self.chunk_m3u8_url(live_url,auth_token)
-  
+
     save_cmd = self.save_cmd( chunk_url, output, output_options=' -vn -acodec copy ' )
-  
+
     logging.info(f'cmd :{save_cmd}')
   
     p1 = subprocess.Popen(shlex.split( save_cmd.strip()) )
@@ -321,6 +371,10 @@ class RadikoHLS:
 
 
   ## radiko のタイムフリーを再生する
+  def play_radiko_timefree(self, channel, start, end):
+    # alias
+    self.play_timefree(channel, start, end)
+
   def play_timefree(self,channel,start,end):
 
     auth_token = self.access_auth()

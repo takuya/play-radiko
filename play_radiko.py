@@ -8,6 +8,7 @@ import argparse
 import datetime
 import subprocess
 
+from RadikoHLS import RadikoHLS
 
 ## for debugging
 # import IPython
@@ -30,7 +31,8 @@ def main():
   channel  = vars(args)['channel_name'].upper()
   duration = vars(args)['duration']
   #
-  radiko = Radiko()
+  #radiko = Radiko()
+  radiko = RadikoHLS()
 
 
 
