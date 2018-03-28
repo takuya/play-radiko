@@ -6,6 +6,7 @@ import argparse
 import datetime
 import subprocess
 
+from RadikoHLS import RadikoHLS
 
 def main():
   
@@ -33,7 +34,8 @@ def main():
   
   
 
-  radiko = Radiko()
+  # radiko = Radiko()
+  radiko = RadikoHLS()
 
 
   if vars(args)['output'] != None :
