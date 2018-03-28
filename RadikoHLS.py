@@ -206,7 +206,8 @@ class RadikoHLS:
             input = 'pipe:0'
             options +='  --no-keys '
         ##
-        player_cmd = f"{self.omxplayer} --hw --timeout 60s -o local {options} '{input}'"
+        ##player_cmd = f"{self.omxplayer} --hw --timeout 60s -o local {options} '{input}'"
+        player_cmd = f"{self.omxplayer} --hw --timeout 60s -o alsa:plughw:1,0 {options} '{input}'" # TODO : -o オプションを渡す
     else:
       player_cmd = f"{self.mplayer}  -cache 128 {options} '{input}'"
       
@@ -376,7 +377,7 @@ class RadikoHLS:
 # radiko.save_timefreestream('MBS','201711241530','201711241600')
 # radiko.play_radiko_livestream('TBS', 7200)
 
-# radiko = RadikoHLS()
+#radiko = RadikoHLS()
 # radiko.save_timefreestream('MBS','201711231600', '201711231610')
 # radiko.play_timefree('MBS','201711231600', '201711231610')
-# radiko.play_radiko_livestream('MBS', 7200)
+#radiko.play_radiko_livestream('MBS', 7200)
