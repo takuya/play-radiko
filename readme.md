@@ -1,7 +1,7 @@
 # Radiko play from command 
 
 ```
-./play_radko.py abc 3600
+./play_radiko.py abc 3600
 ```
 
 ### requirements
@@ -55,18 +55,18 @@ usage examples.
 #### Example 01:
 Play radiko abc 1008 from osaka  for 1 hour 
 ```
-./play_radko.py abc 3600
+./play_radiko.py abc 3600
 ```
 #### Example 02:
 Play radiko TimeFree abc 1008 from 2017-09-18 12:00 to 3600
 ```
-./play_radko.py abc  -d 3600 -f '2017-09-18 12:00'
+./play_radiko.py abc  -d 3600 -f '2017-09-18 12:00'
 ```
 
 #### Example 03 :
 Play Radiko TimeFree  ABC 1008 today 15:00 ピタッと 
 ```
-./play_radko.py abc  -f 15:00 -d 10800
+./play_radiko.py abc  -f 15:00 -d 10800
 ```
 
 #### Example 04 : 
