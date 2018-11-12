@@ -9,6 +9,7 @@ import base64
 import shlex
 import logging
 import xml.etree.ElementTree as ET
+import tempfile
 
 logging.basicConfig(level=logging.INFO)
 
@@ -142,6 +143,16 @@ class RadikoHLS:
     
     return lines[0]
 
+  def get_channel_logo_url( self, channnel='ABC', size='large' ):
+    # ロゴのサイズ large/medium/small
+    # URL の例
+    #  大 http://radiko.jp/station/logo/ABC/logo_large.png
+    #  中 http://radiko.jp/station/logo/ABC/logo_meduim.png
+    #  小 http://radiko.jp/station/logo/ABC/logo_small.png
+    size = size.lower()
+    channnel = channnel.upper()
+    return f'http://radiko.jp/station/logo/{channnel}/logo_{size}.png'
+
 
   def radiko_live_url(self, channel ):
     url = f'http://f-radiko.smartstream.ne.jp/{channel}/_definst_/simul-stream.stream/playlist.m3u8'
@@ -227,7 +238,29 @@ class RadikoHLS:
     cmd = f'{self.ffmpeg} -loglevel panic {input_options} -i "{input}"  {output_options} "{out_filename}"  '
     # cmd = f'{self.ffmpeg} {input_options} -i "{input}"  {output_options} "{out_filename}"  '
     return cmd
-    
+
+
+  #################################################
+  ## TS のストリームを補正して通常のm4a にする。
+  ##
+  #################################################
+  def fix_stream_cmd(self, f_name):
+    cmds = []
+    tmp= tempfile.gettempdir()+"/out.m4a"
+    cmd = f'{self.ffmpeg} -loglevel panic -i "{f_name}" -vn -acodec copy  {tmp}'
+    cmds.append(cmd)
+    cmd =  f"mv '{tmp}' '{f_name}'"
+    cmds.append(cmd)
+    return cmds
+
+  def fix_stream(self, f_name):
+    cmds = self.fix_stream_cmd(f_name)
+    # logging.info(cmds)
+    for cmd in cmds:
+      p1 = subprocess.Popen(cmd,shell=True)
+      p1.communicate()
+
+
 
   ########################################################
   ## コマンドからのインターフェース
@@ -253,9 +286,10 @@ class RadikoHLS:
     chunk_url = self.chunk_m3u8_url(live_url,auth_token)
     cmd = self.save_cmd( chunk_url, output, duration )
     p1 = subprocess.Popen(shlex.split(cmd))
-    output = p1.communicate()
+    p1.communicate()
 
-    pass
+    self.fix_stream(output)
+
 
   def play_and_save_radiko(self,channel,duration=None,output=None):
     ## alias
@@ -283,9 +317,12 @@ class RadikoHLS:
     p1 = subprocess.Popen(shlex.split(stream_cmd.strip()), stdout=subprocess.PIPE)
     p2 = subprocess.Popen(shlex.split(f'tee {output}'), stdin=p1.stdout,stdout=subprocess.PIPE)
     p3 = subprocess.Popen(shlex.split(player_cmd.strip()), stdin=p2.stdout)
-    output = p3.communicate()
-    output = p2.communicate()
-    output = p1.communicate()
+    p3.communicate()
+    p2.communicate()
+    p1.communicate()
+
+    self.fix_stream(output)
+
     exit()
 
   ## radiko サイマルストリームを再生する
@@ -367,7 +404,9 @@ class RadikoHLS:
     logging.info(f'cmd :{save_cmd}')
   
     p1 = subprocess.Popen(shlex.split( save_cmd.strip()) )
-    output = p1.communicate()
+    p1.communicate()
+
+    self.fix_stream(output)
 
 
   ## radiko のタイムフリーを再生する
