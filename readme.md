@@ -6,13 +6,24 @@
 
 ### requirements
 
+Radiko.py 
+
 - Python 3.6 newer -- for f'' string
-- swfextract(1) --- required　for auth, included in swftools
+- swfextract(1) --- required for auth, included in swftools
 - mplayer(1)  --- for play audio 
 - rtmpdump(1) --- for radiko simule streaming 
 - ffmpeg(1)  ---  for radiko time free 
 - GNU date(1) --  for radiko time free 
 - omxplayer(1)  ---  used in raspbian
+
+RadikoHLS (m3u8)
+
+- Python 3.6 newer -- for f'' string
+- mplayer(1)  --- for play audio 
+- ffmpeg(1)  ---  for radiko time free 
+- GNU date(1) --  for radiko time free 
+- omxplayer(1)  ---  for raspbian
+
 
 ### date(1) command 
 
@@ -75,7 +86,6 @@ If  Radiko failed to detect area , play from ssh is useful way.
 ```
 ssh mine 'LANG=ja_JP.UTF-8 python.3.6 play_radiko.py abc --no-play-live --output -'  | mplayer - -cache 128
 ```
-
 
 
 
