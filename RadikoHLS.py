@@ -157,8 +157,7 @@ class RadikoHLS:
     return f'http://radiko.jp/station/logo/{channnel}/logo_{size}.png'
 
   def radiko_live_url(self, channel):
-    url = f'' \
-          f''
+    url = f'http://f-radiko.smartstream.ne.jp/{channel}/_definst_/simul-stream.stream/playlist.m3u8'
     return url
 
   def radiko_timefree_url(self, channel, start, end_t):
