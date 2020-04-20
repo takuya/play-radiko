@@ -14,6 +14,8 @@ import urllib.error
 import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
+import hashlib
+import random
 
 logging.basicConfig(level=logging.INFO)
 
@@ -62,6 +64,9 @@ class RadikoHLS:
 
   def access_auth(self):
     return self.auth_by_html5_api()
+  def generate_uid3(self):
+    self.a_exp = hashlib.md5( random.randint(1000*1000) + str(datetime.datetime.now()) )
+    self.rdk_uid =  hashlib.md5( random.randint(1000*1000) + str(datetime.datetime.now()) )
 
   def auth_by_html5_api(self):
     ##
@@ -140,7 +145,6 @@ class RadikoHLS:
     data = urllib.parse.urlencode('').encode("utf-8")
     req = urllib.request.Request(url, None, headers)
     res = urllib.request.urlopen(req)
-
     body = res.read().decode('utf-8')
     lines = re.findall('^https?://.+m3u8$', body, flags=(re.MULTILINE))
 
@@ -161,8 +165,33 @@ class RadikoHLS:
     return url
 
   def radiko_timefree_url(self, channel, start, end_t):
-    url = f'https://radiko.jp/v2/api/ts/playlist.m3u8?station_id={channel}&l=15&ft={start}&to={end_t}'
-    return url
+    stream_list_url = f'http://radiko.jp/v3/station/stream/pc_html5/{channel.upper()}.xml'
+    ctx = urllib.request.urlopen(stream_list_url)
+    xml_string = ctx.read()
+    root = ET.fromstring(xml_string)
+    play_list_url = root.findall('.//url[@areafree="0"][@timefree="1"]/playlist_create_url')[0].text
+    sid = '84abda646106389023994cf7c9377aa7' ## todo session id　要るの？
+    playlist_url = f'{play_list_url}?station_id=MBS&start_at={start}&ft={start}&end_at={end_t}&to={end_t}&l=15&lsid={sid}&type=b'
+    # stream_list_url = f'https://radiko.jp/v2/api/ts/playlist.m3u8?station_id={channel}&l=15&ft={start}&to={end_t}'
+    return playlist_url
+
+  def radiko_timefree_session_url(self, url, auth_token):
+    ## OPTIONS のリクエストでURLの存在を確認する。
+    data = urllib.parse.urlencode('').encode("utf-8")
+    req = urllib.request.Request(url, method='OPTIONS')
+    res = urllib.request.urlopen(req)
+    ## GET リクエスト
+    ## TODO: PDT をどうするのかを考える
+    headers = {
+      "X-Radiko-AuthToken": auth_token,
+    }
+    data = urllib.parse.urlencode('').encode("utf-8")
+    req = urllib.request.Request(url,None, headers)
+    res = urllib.request.urlopen(req)
+    body = res.read().decode('utf-8')
+    lines = re.findall('^https?://.+$', body, flags=(re.MULTILINE))
+
+    return lines[0]
 
   def get_channels(self):
     areaid = self.area_id()
@@ -429,10 +458,16 @@ class RadikoHLS:
       exit()
 
     live_url = self.radiko_timefree_url(channel, start, end)
-    chunk_url = self.chunk_m3u8_url(live_url, auth_token)
+    session_url = self.radiko_timefree_session_url(live_url,auth_token)
+
+
+
+    print(session_url)
+    exit(1)
+
 
     if self.is_raspbian:
-      player_cmd = self.play_cmd(chunk_url)
+      player_cmd = self.play_cmd(session_url)
 
       logging.info(f'cmd :{player_cmd}')
 
@@ -440,8 +475,8 @@ class RadikoHLS:
       output = p1.communicate()
       exit()
 
-    if re.match('https', chunk_url):
-      stream_cmd = self.save_cmd(chunk_url, '-', output_options='-f mpegts -vn -acodec copy  ')
+    if re.match('https', session_url):
+      stream_cmd = self.save_cmd(session_url, '-', output_options='-f mpegts -vn -acodec copy  ')
       player_cmd = self.play_cmd('-')
 
       logging.info(f'cmd :{stream_cmd}')
@@ -452,7 +487,7 @@ class RadikoHLS:
       output = p2.communicate()
       output = p1.communicate()
     else:
-      player_cmd = self.play_cmd(chunk_url, '-cache 512')
+      player_cmd = self.play_cmd(session_url, '-cache 512')
       logging.info(f'cmd :{player_cmd}')
       p1 = subprocess.Popen(shlex.split(player_cmd.strip()))
       output = p1.communicate()
