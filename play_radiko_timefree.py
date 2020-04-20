@@ -15,8 +15,8 @@ def main():
   parser.add_argument('-d', '--duration', default='1800', help='再生時間 n sec', type=int)
   parser.add_argument('-f', '--from',
                       default=datetime.datetime.strftime(datetime.datetime.now() - datetime.timedelta(hours=3),
-                                                         '%Y%m%d%H%M'),
-                      help='開始時間:2017-09-18 11:11 / date コマンドで解釈できる形式', type=str)
+                                                         '%Y%m%d%H%M%S'),
+                      help='開始時間:2017-09-18 11:11:00 / date コマンドで解釈できる形式', type=str)
 
   parser.add_argument('-o', '--output', help='保存先', nargs='?', default=None, const='')
 
@@ -27,9 +27,9 @@ def main():
     duration = 60
 
   start = vars(args)['from']
-  start = subprocess.check_output("date --date '%s' +'%%Y%%m%%d%%H%%M'" % start, shell=True).strip().decode('utf8')
-  end = datetime.datetime.strptime(start, '%Y%m%d%H%M') + datetime.timedelta(seconds=duration)
-  end = datetime.datetime.strftime(end, '%Y%m%d%H%M')
+  start = subprocess.check_output("date --date '%s' +'%%Y%%m%%d%%H%%M%%S'" % start, shell=True).strip().decode('utf8')
+  end = datetime.datetime.strptime(start, '%Y%m%d%H%M%S') + datetime.timedelta(seconds=duration)
+  end = datetime.datetime.strftime(end, '%Y%m%d%H%M%S')
 
   # radiko = Radiko()
   radiko = RadikoHLS()
