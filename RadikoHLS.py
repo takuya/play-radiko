@@ -161,7 +161,8 @@ class RadikoHLS:
     return url
 
   def radiko_timefree_url(self, channel, start, end_t):
-    url = f'https://radiko.jp/v2/api/ts/playlist.m3u8?station_id={channel}&l=15&ft={start}&to={end_t}'
+    # sample "https://radiko.jp/v2/api/ts/playlist.m3u8?station_id=ABC&l=15&ft=20200419210000&to=20200419211500"
+    url =   f'https://radiko.jp/v2/api/ts/playlist.m3u8?station_id={channel}&l=15&ft={start}&to={end_t}'
     return url
 
   def get_channels(self):
@@ -418,11 +419,11 @@ class RadikoHLS:
     if type(start) == int or type(start) == float:
       start = datetime.datetime.fromtimestamp(start)
     if type(start) == datetime.datetime:
-      start = datetime.datetime.strftime(start, '%Y%m%d%H%M')
+      start = datetime.datetime.strftime(start, '%Y%m%d%H%M%s')
     if type(end) == int or type(end) == float:
       endt = datetime.datetime.fromtimestamp(end)
     if type(end) == datetime.datetime:
-      end = datetime.datetime.strftime(start, '%Y%m%d%H%M')
+      end = datetime.datetime.strftime(start, '%Y%m%d%H%M%s')
 
     if self.is_channel_available(channel) == False:
       logging.info(self.get_channels())
