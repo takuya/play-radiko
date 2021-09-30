@@ -377,11 +377,11 @@ class RadikoHLS:
     if type(start) == int or type(start) == float:
       start = datetime.datetime.fromtimestamp(start)
     if type(start) == datetime.datetime:
-      start = datetime.datetime.strftime(start, '%Y%m%d%H%M')
+      start = datetime.datetime.strftime(start, '%Y%m%d%H%M%S')
     if type(end) == int or type(end) == float:
       endt = datetime.datetime.fromtimestamp(end)
     if type(end) == datetime.datetime:
-      end = datetime.datetime.strftime(end, '%Y%m%d%H%M')
+      end = datetime.datetime.strftime(end, '%Y%m%d%H%M%S')
 
     if self.is_channel_available(channel) == False:
       logging.info(self.get_channels())
@@ -390,9 +390,9 @@ class RadikoHLS:
     if output == None or output == '':
       output = self.get_default_output_filename(
         channel,
-        datetime.datetime.strptime(start, '%Y%m%d%H%M').timestamp(),
+        datetime.datetime.strptime(start, '%Y%m%d%H%M%S').timestamp(),
         None,
-        datetime.datetime.strptime(end, '%Y%m%d%H%M').timestamp()
+        datetime.datetime.strptime(end, '%Y%m%d%H%M%S').timestamp()
       )
 
     live_url = self.radiko_timefree_url(channel, start, end)
@@ -419,11 +419,11 @@ class RadikoHLS:
     if type(start) == int or type(start) == float:
       start = datetime.datetime.fromtimestamp(start)
     if type(start) == datetime.datetime:
-      start = datetime.datetime.strftime(start, '%Y%m%d%H%M%s')
+      start = datetime.datetime.strftime(start, '%Y%m%d%H%M%S')
     if type(end) == int or type(end) == float:
       endt = datetime.datetime.fromtimestamp(end)
     if type(end) == datetime.datetime:
-      end = datetime.datetime.strftime(start, '%Y%m%d%H%M%s')
+      end = datetime.datetime.strftime(start, '%Y%m%d%H%M%S')
 
     if self.is_channel_available(channel) == False:
       logging.info(self.get_channels())
