@@ -88,9 +88,14 @@ ssh mine 'LANG=ja_JP.UTF-8 python.3.6 play_radiko.py abc --no-play-live --output
 ```
 
 #### Example 05 : 
-Usage sample Save stream as sample command im ./bin
+Usage sample Save stream as sample command im ./bin.
 ```
 python bin/rec_radiko_timefree.py -c ABC -d 10800 -f '2021-09-30 12:00' 
+```
+
+When specify day of week,  use date ( GNU date ) is casual way.
+```
+python bin/rec_radiko_timefree.py -c ABC -d 10800 -f  "$( date  --date 'last thursday'  +'%Y-%m-%d 12:00')
 ```
 
 
