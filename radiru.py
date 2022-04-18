@@ -12,7 +12,7 @@ pprint = pp.pprint
 
 
 class Radiru:
-  channels_url = 'http://www.nhk.or.jp/radio/config/config_web.xml'
+  channels_url = 'https://www.nhk.or.jp/radio/config/config_web.xml'
 
   def __init__(self):
     self.list_root = self.get_xml_of_urls()
@@ -20,7 +20,10 @@ class Radiru:
     self.channels = ['r1hls', 'r2hls', 'fmlhs']
 
   def get_xml_of_urls(self):
-    ctx = urllib.request.urlopen(self.channels_url)
+    print( self.channels_url )
+    headers = {'User-Agent': "curl/7.64.0"}
+    req = urllib.request.Request(self.channels_url,None, headers)
+    ctx = urllib.request.urlopen(req)
     xml_string = ctx.read()
     root = ET.fromstring(xml_string)
     return root
