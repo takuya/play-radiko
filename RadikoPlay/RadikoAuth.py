@@ -7,6 +7,9 @@ import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
 
+from RadikoPlay.radiko_url import *
+
+
 
 
 class RadikoAuth:
@@ -143,20 +146,4 @@ class RadikoAuth:
   def area_id(self):
     return self.__area.strip().split(",")[0]
 
-
-
-if __name__ == '__main__':
-  from radiko_url import *
-  channel = "ABC"
-  auth = RadikoAuth()
-  auth_token = auth.access_auth()
-  auth.is_channel_available(channel)
-  live_url = radiko_live_url(channel)
-  # print(live_url ,"\n")
-  print(auth_token)
-  chunk_url = auth.auth_m3u8_url(live_url, auth_token)
-  # print(chunk_url)
-
-else:
-  from RadikoPlay.radiko_url import *
 
