@@ -83,15 +83,15 @@ class PlayRadikoCmdBuilder:
 
     sys.exit(0)
 
-  def play_and_save(self, channel, output=None, start=None, duration=1800, no_exec_cmd=False):
-    cmds = self.__play_and_save(channel, output=output, start=start, duration=duration)
+  def play_and_save(self, channel, output=None, start=None, duration=1800, no_exec_cmd=False,player_options=None):
+    cmds = self.__play_and_save(channel, output=output, start=start, duration=duration,player_options=player_options)
     if no_exec_cmd is False:
       self.exec_cmd(cmds, duration=duration)
       self.output = output if output is not None else self.__output_filename(channel, start, duration)
       self.fix_stream(output)
     return cmds
 
-  def __play_and_save(self, channel, output=None, start=None, duration=1800):
+  def __play_and_save(self, channel, output=None, start=None, duration=1800,player_options=None):
     output = output if output is not None else self.__output_filename(channel, start, duration)
     #
     cmds = []
@@ -103,7 +103,7 @@ class PlayRadikoCmdBuilder:
       input_options=f'-t {duration}',
       output_options='-f mpegts -acodec copy')
     cmd2 = f"{self.tee} {output}"
-    cmd3 = self.__play_cmd('-')
+    cmd3 = self.__play_cmd('-',options=player_options)
     #
 
     cmds.append(cmd1)
@@ -112,10 +112,10 @@ class PlayRadikoCmdBuilder:
 
     return cmds
 
-  def play(self, channel, start=None, duration=None, no_exec_cmd=False):
+  def play(self, channel, start=None, duration=None, no_exec_cmd=False,player_options=None):
 
     url = self.__radiko_m3u8_url(channel, start, duration)
-    cmd = self.__play_cmd(url)
+    cmd = self.__play_cmd(url,options=player_options)
     cmd = [cmd]
     if no_exec_cmd is False:
       self.exec_cmd(cmd, duration=duration)
