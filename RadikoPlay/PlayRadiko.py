@@ -23,7 +23,7 @@ class PlayRadikoCmdBuilder:
   output = None
 
   def __init__(self):
-    self.check_path()
+    self.__check_path()
     self.auth()
 
   def auth(self):
@@ -31,13 +31,13 @@ class PlayRadikoCmdBuilder:
     token = auth.access_auth()
     self.token = token
 
-  def check_path(self):
-    self.ffmpeg = self.get_path('ffmpeg')
-    self.mplayer = self.get_path('mplayer')
-    self.ffplay = self.get_path('ffplay')
-    self.tee = self.get_path('tee')
+  def __check_path(self):
+    self.ffmpeg = self.__get_path('ffmpeg')
+    self.mplayer = self.__get_path('mplayer')
+    self.ffplay = self.__get_path('ffplay')
+    self.tee = self.__get_path('tee')
 
-  def get_path(self, cmd_name):
+  def __get_path(self, cmd_name):
     # コマンドのパスや存在チェックや環境チェック
     if subprocess.getstatusoutput(f'type {cmd_name}')[0] == 0:
       return subprocess.check_output(f"which {cmd_name}", shell=True).strip().decode('utf8')
@@ -202,13 +202,6 @@ class PlayRadikoCmdBuilder:
       ret = datetime.datetime.strftime(datetime_represent, '%Y%m%d%H%M%S')
     return ret
 
-  def save_cmd(self, input, out_filename, duration=None, input_options='', output_options=''):
-    if duration:
-      input_options += f" -t '{duration}'"
-    ##
-    cmd = f'{self.ffmpeg} -loglevel panic {input_options} -i "{input}"  {output_options} "{out_filename}"  '
-    # cmd = f'{self.ffmpeg} {input_options} -i "{input}"  {output_options} "{out_filename}"  '
-    return cmd
 
   def __fix_stream_cmd(self, f_name):
     cmds = []
