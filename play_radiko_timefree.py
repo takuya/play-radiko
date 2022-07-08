@@ -5,8 +5,8 @@ import argparse
 import datetime
 import subprocess
 
-from RadikoHLS import RadikoHLS
 
+from RadikoPlay.PlayRadiko import PlayRadikoCmdBuilder
 
 def main():
   parser = argparse.ArgumentParser(description=u'radiko の再生と録音を行いますよ')
@@ -19,30 +19,40 @@ def main():
                       help='開始時間:2017-09-18 11:11:00 / date コマンドで解釈できる形式', type=str)
 
   parser.add_argument('-o', '--output', help='保存先', nargs='?', default=None, const='')
+  parser.add_argument('--play-and-save', help='再生と保存', action='store_true')
 
   args = parser.parse_args()
   channel = vars(args)['channel_name'].upper()
   duration = vars(args)['duration']
-  if duration < 60:
-    duration = 60
+  # if duration < 60:
+  #   duration = 60
 
   start = vars(args)['from']
-  start = subprocess.check_output("date --date '%s' +'%%Y%%m%%d%%H%%M%%S'" % start, shell=True).strip().decode('utf8')
-  end = datetime.datetime.strptime(start, '%Y%m%d%H%M%S') + datetime.timedelta(seconds=duration)
-  end = datetime.datetime.strftime(end, '%Y%m%d%H%M%S')
+  radiko = PlayRadikoCmdBuilder()
+  radiko.use_player='ffplay'
 
-  # radiko = Radiko()
-  radiko = RadikoHLS()
-
-  if vars(args)['output'] != None:
+  if vars(args)['play_and_save']==False and vars(args)['output'] != None:
     print('only save ')
     f_out = vars(args)['output']
-    radiko.save_radiko_timefree(channel, start, end, output=f_out)
+
+    cmds = radiko.save(channel, start=start,
+                duration=duration,
+                output=f_out
+                )
+    radiko.exec_cmd(cmds,duration=duration)
+
+
     exit()
   else:
-    print('just play ')
-    radiko.play_radiko_timefree(channel, start, end)
-    exit()
+    if vars(args)['play_and_save'] is True:
+      print('play and save timefree')
+      output = vars(args)['output']
+      cmds = radiko.play_and_save(channel, start=start, duration=duration,output=output)
+      exit(0)
+    else:
+      print('just play timefree ')
+      cmds = radiko.play(channel, start=start,duration=duration)
+      exit(0)
 
   #
 
