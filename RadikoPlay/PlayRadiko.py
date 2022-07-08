@@ -83,7 +83,7 @@ class PlayRadikoCmdBuilder:
 
     sys.exit(0)
 
-  def play_and_save(self, channel, output=None, start=None, duration=1800, no_exec_cmd=False,player_options=None):
+  def play_and_save(self, channel, output=None, start=None, duration=1800, no_exec_cmd=False,player_options=''):
     cmds = self.__play_and_save(channel, output=output, start=start, duration=duration,player_options=player_options)
     if no_exec_cmd is False:
       self.exec_cmd(cmds, duration=duration)
@@ -91,7 +91,7 @@ class PlayRadikoCmdBuilder:
       self.fix_stream(output)
     return cmds
 
-  def __play_and_save(self, channel, output=None, start=None, duration=1800,player_options=None):
+  def __play_and_save(self, channel, output=None, start=None, duration=1800,player_options=''):
     output = output if output is not None else self.__output_filename(channel, start, duration)
     #
     cmds = []
@@ -112,7 +112,7 @@ class PlayRadikoCmdBuilder:
 
     return cmds
 
-  def play(self, channel, start=None, duration=None, no_exec_cmd=False,player_options=None):
+  def play(self, channel, start=None, duration=None, no_exec_cmd=False,player_options=''):
 
     url = self.__radiko_m3u8_url(channel, start, duration)
     cmd = self.__play_cmd(url,options=player_options)
