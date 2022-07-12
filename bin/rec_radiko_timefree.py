@@ -1,21 +1,14 @@
 #!/usr/bin/env python
 
 import os
-
-
 import subprocess
 import shlex
 import shutil
 from pathlib import Path
 import locale
-
-
 import argparse
 import datetime
 import xml.etree.ElementTree as ET
-import pathlib
-
-
 
 
 class RecRadikoTimeFree:

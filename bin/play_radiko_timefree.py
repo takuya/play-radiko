@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 # coding:utf-8
 # vim: expandtab nowrap ts=2 sw=2 sts=2
-import argparse
-import datetime
-import subprocess
 
 
-from RadikoPlay.PlayRadiko import PlayRadikoCmdBuilder
+
 
 def main():
+  import argparse
+  import datetime
+  from RadikoPlay.PlayRadiko import PlayRadikoCmdBuilder
   parser = argparse.ArgumentParser(description=u'radiko の再生と録音を行いますよ')
 
   parser.add_argument('channel_name', help='チャンネル')
@@ -58,4 +58,6 @@ def main():
 
 
 if __name__ == '__main__':
+  import sys,os
+  sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
   main()
