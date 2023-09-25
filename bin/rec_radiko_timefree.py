@@ -172,18 +172,31 @@ class RecRadikoTimeFree:
   def prog_info(self):
 
     date = self.day.strftime("%Y%m%d")
-    ft= self.day.strftime("%Y%m%d%H%M")
+    ft= self.day.strftime("%Y%m%d%H%M00")
+    to= datetime.datetime.fromtimestamp(
+            self.day.timestamp()+datetime.timedelta(seconds=self.duration).total_seconds()
+    ).strftime("%Y%m%d%H%M00")
 
-    cmd = f"curl -s http://radiko.jp/v3/program/date/{date}/JP28.xml  | xmllint --xpath  \"//*[@id='{self.channel}']//prog[contains(@ft, '{ft}')]\" - "
-    # print(cmd)
-    try :
-      ret = subprocess.check_output(cmd, shell=True).strip().decode('utf8')
-      info  = self.parse_prog_info(ret)
-    except: 
-        info = None
-    #print(ret) 
+    selector = { "ft": f"[@ft<={ft}][last()]" , "to":f"[{to}<=@to][1]" }
+    info = None
+    for key in selector:
+      query = f"//*[@id='{self.channel}']//prog{selector[key]}"
+      cmd = (f"curl -s http://radiko.jp/v3/program/date/{date}/JP28.xml "+
+        f" | xmllint --xpath \"{query}\" - ")
+      # print(cmd)
+      try :
+        ret = subprocess.check_output(cmd, shell=True).strip().decode('utf8')
+        info = self.parse_prog_info(ret)
+        break
+      except:
+          info = None
+          continue
+    if info is None:
+      raise "Program info not found."
+
     self.info=info
     return self.info
+
 
 
 if __name__ == "__main__":
