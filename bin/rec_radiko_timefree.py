@@ -1,14 +1,21 @@
 #!/usr/bin/env python
 
 import os
+
+
 import subprocess
 import shlex
 import shutil
 from pathlib import Path
 import locale
+
+
 import argparse
 import datetime
 import xml.etree.ElementTree as ET
+import pathlib
+
+
 
 
 class RecRadikoTimeFree:
@@ -26,7 +33,7 @@ class RecRadikoTimeFree:
     d = self.day.strftime("%Y-%m-%d")
     cmd ='python3 %s %s -f "%s %s" -d %s -o'
     cmd = cmd % (path,self.channel,d,self.start,self.duration)
-    # print(shlex.split(cmd))
+    print(shlex.split(cmd))
     subprocess.call(shlex.split(cmd));
 
   def  fix_stream(self):
