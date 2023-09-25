@@ -146,7 +146,7 @@ class RecRadikoTimeFree:
     img_url = self.info['img']
     img_name = f"/tmp/radiko-{self.info['title']}.jpg"
     subprocess.check_output(f'curl -sL "{img_url}" > out  ', shell=True).strip().decode('utf8')
-    subprocess.check_output(f'convert out {img_name}', shell=True).strip().decode('utf8')
+    subprocess.check_output(f'convert out "{img_name}"', shell=True).strip().decode('utf8')
     subprocess.check_output(f'rm out', shell=True).strip().decode('utf8')
     return img_name;
 
